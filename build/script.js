@@ -4,15 +4,26 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+window.elements = {};
+
 var CreatingElement = function () {
 		function CreatingElement(regString, objAppendID) {
 				_classCallCheck(this, CreatingElement);
 
 				this.regString = regString;
 				this.objAppendID = objAppendID;
+				this.markEl = 'el_' + this.sizingElements();
 		}
 
 		_createClass(CreatingElement, [{
+				key: 'sizingElements',
+				value: function sizingElements() {
+						// sizing obj elements
+						var countElements = Object.keys(elements).length;
+						var markElement = countElements === 0 ? 0 : countElements++;
+						return markElement;
+				}
+		}, {
 				key: 'toReadeString',
 				value: function toReadeString() {
 
@@ -25,13 +36,22 @@ var CreatingElement = function () {
 						regObj.elementName = /<(\w+[^\s])/;
 
 						// find class name
-						regObj.className = /\.(\w+[^\s])/;
+						regObj.className = /\.([\w-_]+)/;
 
 						// find id name
-						regObj.idName = /\#(\w+[^\s])/;
+						regObj.idName = /\#([\w_]+)/;
 
 						// find inside element
 						regObj.inside = /inside\((.*)\)/;
+
+						// count elements
+						regObj.countEl = /inside\(.*\)\+(\d)/;
+
+						// type
+						regObj.type = /type=\"(\w+)\"/;
+
+						// value
+						regObj.value = /value=\"(\w.+)\"/;
 
 						return regObj;
 				}
@@ -48,7 +68,9 @@ var CreatingElement = function () {
 						propsObj.elementName = _string.match(this.toReadeString().elementName);
 						propsObj.className = _string.match(this.toReadeString().className);
 						propsObj.idName = _string.match(this.toReadeString().idName);
-						propsObj.inside = _string.match(this.toReadeString().inside);
+						propsObj.inside = {};
+						propsObj.inside.countEl = _string.match(this.toReadeString().countEl);
+						propsObj.inside.srting = _string.match(this.toReadeString().inside);
 
 						return propsObj;
 				}
@@ -65,9 +87,14 @@ var CreatingElement = function () {
 						// is idName
 						var _idName = this.getPropsEl().idName === null ? '' : this.getPropsEl().idName[1];
 
+						// create element
 						var el = document.createElement(_elementName);
 						el.className = _className;
 						el.id = _idName;
+
+						// mark elements		
+						var _el = this.markEl;
+						elements[_el] = el;
 
 						// append element
 						if (this.objAppendID === undefined) {
@@ -83,22 +110,50 @@ var CreatingElement = function () {
 						}
 				}
 		}, {
-				key: 'toReadeStringInside',
-				value: function toReadeStringInside() {
-
-						// 
-
-				}
-		}, {
 				key: 'inside',
 				value: function inside() {
-						console.log(this.getPropsEl().inside[1]);
-						// is elementName
+
+						// str
+						var _string = this.getPropsEl().inside.srting[1];
+
+						// elementName
+						var elementName = _string.match(this.toReadeString().elementName);
+						var _elementName = elementName === null ? 'div' : elementName[1];
+
+						// type
+						var elementType = _string.match(this.toReadeString().type);
+						var _elementType = elementType === null ? 'text' : elementType[1];
+
+						// value
+						var elementValue = _string.match(this.toReadeString().value);
+						var _elementValue = elementValue === null ? '' : elementValue[1];
+
+						var plusEl = this.getPropsEl().inside.countEl === null ? 1 : this.getPropsEl().inside.countEl[1];
+
+						// append
+						for (var i = 0; i < plusEl; i++) {
+								// create el
+								var insideElement = document.createElement(_elementName);
+
+								// set type
+								if (elementType !== null) {
+										insideElement.setAttribute('type', _elementType);
+								}
+
+								// set value
+								if (elementValue !== null) {
+										insideElement.setAttribute('value', _elementValue);
+								}
+
+								elements[this.markEl].appendChild(insideElement);
+						}
 				}
 		}]);
 
 		return CreatingElement;
 }();
 
-var newEl = new CreatingElement('<form #someID .someClass inside(<input type="text" value="Some value")', 'mxApp');
-newEl.createElement();
+function Element(str, app) {
+		var newEl = new CreatingElement(str, app);
+		newEl.createElement();
+}

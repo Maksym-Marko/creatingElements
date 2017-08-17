@@ -9,6 +9,13 @@
 	<div id="mxApp"></div>
 
 	<script src="./build/script.js"></script>
+
+	<script>
+		window.onload = function(){
+			Element( '<form #someID .someClass inside(<input type="text" value="Some value")+2', 'mxApp' );
+			Element( '<section .mx-section inside()', 'mxApp' );
+		}
+	</script>
 	
 </body>
 </html>
